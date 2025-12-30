@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-service
+  annotations:
+    mia-platform.eu/version: 14.3.1
+  labels:
+    app: echo-service
+    app.kubernetes.io/name: echo-service
+    app.kubernetes.io/version: 1.0.0
+    app.kubernetes.io/component: custom
+    app.kubernetes.io/part-of: github-app-v6
+    app.kubernetes.io/managed-by: mia-platform
+    mia-platform.eu/stage: DEV
+    mia-platform.eu/tenant: rocket-playground
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 3000
+      nodePort: null
+  selector:
+    app: echo-service

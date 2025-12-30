@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-service
+  annotations:
+    mia-platform.eu/version: 14.3.1
+    fluentbit.io/parser: pino
+  labels:
+    app: echo-service
+    app.kubernetes.io/name: echo-service
+    app.kubernetes.io/version: 1.0.0
+    app.kubernetes.io/component: custom
+    app.kubernetes.io/part-of: github-app-v6
+    app.kubernetes.io/managed-by: mia-platform
+    mia-platform.eu/stage: DEV
+    mia-platform.eu/tenant: rocket-playground
+    mia-platform.eu/log-type: mia-json
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo-service
+  strategy:
+    type: RollingUpdate
+  revisionHistoryLimit: 1
+  template:
+    metadata:
+      annotations:
+        mia-platform.eu/version: 14.3.1
+        fluentbit.io/parser: pino
+      labels:
+        app: echo-service
+        app.kubernetes.io/name: echo-service
+        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/component: custom
+        app.kubernetes.io/part-of: github-app-v6
+        app.kubernetes.io/managed-by: mia-platform
+        mia-platform.eu/stage: DEV
+        mia-platform.eu/tenant: rocket-playground
+        mia-platform.eu/log-type: mia-json
+    spec:
+      imagePullSecrets:
+        - name: nexus-gcloud
+      terminationGracePeriodSeconds: 30
+      serviceAccountName: echo-service
+      containers:
+        - name: echo-service
+          image: davidebianchi/echo-service:1.0.0
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: 150Mi
+              cpu: 100m
+            requests:
+              memory: 150Mi
+              cpu: 100m
+          volumeMounts: []
+          ports:
+            - name: http
+              containerPort: 3000
+          args: []
+          env:
+            - name: LOG_LEVEL
+              value: '{{LOG_LEVEL}}'
+            - name: MICROSERVICE_GATEWAY_SERVICE_NAME
+              value: microservice-gateway
+            - name: TRUSTED_PROXIES
+              value: 10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+            - name: HTTP_PORT
+              value: '3000'
+            - name: USERID_HEADER_KEY
+              value: miauserid
+            - name: GROUPS_HEADER_KEY
+              value: miausergroups
+            - name: CLIENTTYPE_HEADER_KEY
+              value: client-type
+            - name: BACKOFFICE_HEADER_KEY
+              value: isbackoffice
+            - name: USER_PROPERTIES_HEADER_KEY
+              value: miauserproperties
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              port: http
+              path: /-/ready
+          livenessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 1
+            failureThreshold: 3
+            httpGet:
+              port: http
+              path: /-/healthz
+      volumes: []
